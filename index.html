@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Citi Bike Docks</title>
+  <style>
+    body {
+      font-family: monospace;
+      background-color: #f0f0f0;
+      color: #333;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .station {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 10px;
+      background-color: #fff;
+      border-radius: 5px;
+      box-shadow: 0 0 5px #ccc;
+    }
+
+    .station span {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script>
+    const stationIds = [
+      '3b530cff-dd26-4cfd-b570-a85fd53354fe',
+      '66db3583-0aca-11e7-82f6-3863bb44ef7c',
+      'e72f0aec-2293-4636-988c-b9d30df092f8'
+    ];
+
+    const stationNames = {
+      '3b530cff-dd26-4cfd-b570-a85fd53354fe': 'West St & Liberty St',
+      '66db3583-0aca-11e7-82f6-3863bb44ef7c': 'Liberty St & Broadway',
+      'e72f0aec-2293-4636-988c-b9d30df092f8': 'Liberty St & Nassau St'
+    };
+
+    fetch('https://gbfs.citibikenyc.com/gbfs/en/station_status.json')
+      .then(response => response.json())
+      .then(data => {
+        const stations = data.data.stations;
+        const results = {};
+        stations.forEach(station => {
+          if (stationIds.includes(station.station_id)) {
+            results[station.station_id] = station.num_docks_available;
+          }
+        });
+
+        const app = document.getElementById('app');
+        app.innerHTML = '';
+        Object.entries(results).forEach(([id, docks]) => {
+          const div = document.createElement('div');
+          div.className = 'station';
+          div.innerHTML = `
+            <span>${stationNames[id]}</span>
+            <span>${docks}</span>
+          `;
+          app.appendChild(div);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        const app = document.getElementById('app');
+        app.innerHTML = '<p>Failed to load data</p>';
+      });
+  </script>
+</body>
+</html>
